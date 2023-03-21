@@ -1,56 +1,42 @@
+const express = require("express");
+const fs = require("fs").promises;
+const path = require("path");
 
-const express = require('express')
-const path = require('path');
-const app = express()
-const port = 3000
+const app = express();
+const dataFile = path.join(__dirname, "data.json");
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'))
-})
+// Support POSTing form data with URL encoded
+app.use(express.urlencoded({ extended: true }));
 
-/* CSS FILES */
-app.get('/css/style.css', function(req, res) {
-  res.sendFile(__dirname + "/css/style.css");
+// Enable CORS
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+
+    next();
 });
 
-app.get('/css/topnav.css', function(req, res) {
-  res.sendFile(__dirname + "/css/topnav.css");
+app.get("/poll", async (req, res) => {
+    let data = JSON.parse(await fs.readFile(dataFile, "utf-8"));
+    const totalVotes = Object.values(data).reduce((total, n) => total += n, 0);
+
+    data = Object.entries(data).map(([label, votes]) => {
+        return {
+            label,
+            percentage: (((100 * votes) / totalVotes) || 0).toFixed(0)
+        }
+    });
+
+    res.json(data);
 });
 
-app.get('/css/login.css', function(req, res) {
-  res.sendFile(__dirname + "/css/login.css");
+app.post("/poll", async (req, res) => {
+    const data = JSON.parse(await fs.readFile(dataFile, "utf-8"));
+
+    data[req.body.add]++;
+
+    await fs.writeFile(dataFile, JSON.stringify(data));
+
+    res.end();
 });
 
-/* JS FILES */
-app.get('/js/banco.js', function(req, res) {
-  res.sendFile(__dirname + "/js/banco.js");
-});
-
-app.get('/js/auth.js', function(req, res) {
-  res.sendFile(__dirname + "/js/auth.js");
-});
-
-app.get('/js/imagenes.js', function(req, res) {
-  res.sendFile(__dirname + "/js/imagenes.js");
-});
-
-app.get('/js/lineas.js', function(req, res) {
-  res.sendFile(__dirname + "/js/lineas.js");
-});
-
-/* HTML FILES */
-app.get('/index.html', function(req, res) {
-  res.sendFile(__dirname + "index.html");
-});
-
-app.get('/Monthly.html', function(req, res) {
-  res.sendFile(__dirname + "Monthly.html");
-});
-
-app.get('/Auth.html', function(req, res) {
-  res.sendFile(__dirname + "/Auth.html");
-});
-
-app.listen(port, () => {
-  console.log('Server started at http://localhost:' + port);
-})
+app.listen(3000, "0.0.0.0", () => console.log("Server is running..."));
