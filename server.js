@@ -18,7 +18,6 @@ app.use((req, res, next) => {
 app.get("/poll", (req, res) => {
     let data = JSON.parse(fs.readFileSync(dataFile, "utf-8"));
     const totalVotes = Object.values(data).reduce((total, n) => total += n, 0);
-    console.log(data)
 
     data = Object.entries(data).map(([label, votes]) => {
         return {
@@ -32,7 +31,6 @@ app.get("/poll", (req, res) => {
 app.post("/poll", (req, res) => {
     const data = JSON.parse(fs.readFileSync(dataFile, "utf-8"));
     let tierResults = JSON.parse(Object.keys(req.body))
-    console.log(data);
 
     for (const property in tierResults) {
         if (Object.hasOwnProperty.bind(data)(property)) {
@@ -41,8 +39,6 @@ app.post("/poll", (req, res) => {
     }
 
     fs.writeFileSync(dataFile, JSON.stringify(data));
-
-    console.log(data)
 
     res.end();
 });
