@@ -22,7 +22,8 @@ app.get("/poll", (req, res) => {
     data = Object.entries(data).map(([label, votes]) => {
         return {
             label,
-            percentage: (((100 * votes) / totalVotes) || 0).toFixed(0)
+            percentage: (((100 * votes) / totalVotes) || 0).toFixed(0),
+            totalVotes: totalVotes
         }
     });
     res.json(data);
