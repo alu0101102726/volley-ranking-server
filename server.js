@@ -1,5 +1,5 @@
 const express = require("express");
-const fs = require("fs").promises;
+const fs = require("fs");
 const path = require("path");
 
 const app = express();
@@ -15,9 +15,10 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get("/poll", async (req, res) => {
-    let data = JSON.parse(await fs.readFile(dataFile, "utf-8"));
+app.get("/poll", (req, res) => {
+    let data = JSON.parse(fs.readFileSync(dataFile, "utf-8"));
     const totalVotes = Object.values(data).reduce((total, n) => total += n, 0);
+    console.log(data)
 
     data = Object.entries(data).map(([label, votes]) => {
         return {
@@ -25,18 +26,25 @@ app.get("/poll", async (req, res) => {
             percentage: (((100 * votes) / totalVotes) || 0).toFixed(0)
         }
     });
-
     res.json(data);
 });
 
-app.post("/poll", async (req, res) => {
-    const data = JSON.parse(await fs.readFile(dataFile, "utf-8"));
+app.post("/poll", (req, res) => {
+    const data = JSON.parse(fs.readFileSync(dataFile, "utf-8"));
+    let tierResults = JSON.parse(Object.keys(req.body))
+    console.log(data);
 
-    data[req.body.add]++;
+    for (const property in tierResults) {
+        if (Object.hasOwnProperty.bind(data)(property)) {
+            data[property] += tierResults[property];
+        }
+    }
 
-    await fs.writeFile(dataFile, JSON.stringify(data));
+    fs.writeFileSync(dataFile, JSON.stringify(data));
+
+    console.log(data)
 
     res.end();
 });
 
-app.listen(3000, "0.0.0.0", () => console.log("Server is running..."));
+app.listen(3000, () => console.log("Server is running..."));
