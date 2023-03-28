@@ -4,6 +4,11 @@ const path = require("path");
 
 const app = express();
 const dataFile = path.join(__dirname, "data.json");
+const userFile = path.join(__dirname, "/users");
+
+let today = new Date();
+let finalDate = new Date();
+finalDate.setDate(today.getDate() + 5);
 
 // Support POSTing form data with URL encoded
 app.use(express.urlencoded({ extended: true }));
@@ -31,7 +36,8 @@ app.get("/poll", (req, res) => {
 
 app.post("/poll", (req, res) => {
     const data = JSON.parse(fs.readFileSync(dataFile, "utf-8"));
-    let tierResults = JSON.parse(Object.keys(req.body))
+    let userInfo = JSON.parse(Object.keys(req.body));
+    let tierResults = userInfo.votes
 
     for (const property in tierResults) {
         if (Object.hasOwnProperty.bind(data)(property)) {
@@ -41,7 +47,44 @@ app.post("/poll", (req, res) => {
 
     fs.writeFileSync(dataFile, JSON.stringify(data));
 
+    const emailSplit = userInfo.email.split('@')[0];
+    const userVote = JSON.parse(fs.readFileSync(`${userFile}/${emailSplit}.json`, "utf-8"));
+    fs.unlinkSync(`${userFile}/${emailSplit}.json`);
+    fs.writeFileSync(`${userFile}/${emailSplit}.json`, JSON.stringify(userInfo));
+
     res.end();
+});
+
+app.post("/register", (req, res) => {
+    const data = JSON.parse(Object.keys(req.body));
+    data.votes = [];
+    const emailUser = data.email.split('@')[0];
+    const pathUser = `./users/${emailUser}.json`;
+    fs.writeFileSync(pathUser, JSON.stringify(data));
+
+    res.end();
+});
+
+app.get("/login", (req, res) => {
+    let allUsersJSON = {};
+    let pathUser = './users';
+    const dataFiles = fs.readdirSync(pathUser, "utf-8")
+    dataFiles.forEach(userJSON => {
+        const userEmail = userJSON.split('.')[0];
+        allUsersJSON[`${userEmail}`] = JSON.parse(fs.readFileSync(`${pathUser}/${userJSON}`, "utf-8"));
+
+    })  
+    res.json(allUsersJSON);
+});
+
+app.get("/votes", (req, res) => { 
+    let currentDay = new Date();
+    let dateDifference = (finalDate.getTime() - currentDay.getTime()) / 1000;
+    if (dateDifference < 1) {
+        finalDate.setDate(currentDay.getDate() + 5);
+        res.json({endVote: finalDate,changed: true});
+    } 
+    res.json({endVote: finalDate,changed: false});
 });
   
 
