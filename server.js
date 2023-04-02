@@ -8,6 +8,7 @@ const userFile = path.join(__dirname, "/users");
 
 let today = new Date();
 let finalDate = new Date();
+let totalPeopleVoted = 0;
 finalDate.setDate(today.getDate() + 5);
 
 // Support POSTing form data with URL encoded
@@ -37,7 +38,8 @@ app.get("/poll", (req, res) => {
 app.post("/poll", (req, res) => {
     const data = JSON.parse(fs.readFileSync(dataFile, "utf-8"));
     let userInfo = JSON.parse(Object.keys(req.body));
-    let tierResults = userInfo.votes
+    let tierResults = userInfo.votes;
+    totalPeopleVoted = userInfo.peopleVoted;
 
     for (const property in tierResults) {
         if (Object.hasOwnProperty.bind(data)(property)) {
@@ -48,11 +50,16 @@ app.post("/poll", (req, res) => {
     fs.writeFileSync(dataFile, JSON.stringify(data));
 
     const emailSplit = userInfo.email.split('@')[0];
-    const userVote = JSON.parse(fs.readFileSync(`${userFile}/${emailSplit}.json`, "utf-8"));
     fs.unlinkSync(`${userFile}/${emailSplit}.json`);
     fs.writeFileSync(`${userFile}/${emailSplit}.json`, JSON.stringify(userInfo));
 
     res.end();
+});
+
+app.get("/peopleVoted", (req, res) => {
+    let data = JSON.parse(fs.readFileSync(dataFile, "utf-8"));
+    const totalVotes = Object.values(data).reduce((total, n) => total += n, 0);
+    res.json({totalPeopleVoted, totalVotes});
 });
 
 app.post("/register", (req, res) => {
