@@ -88,6 +88,7 @@ app.get("/votes", (req, res) => {
     let currentDay = new Date();
     let dateDifference = (finalDate.getTime() - currentDay.getTime()) / 1000;
     if (dateDifference < 1) {
+        dataFile = path.join(__dirname, `votes_${currentDay.getTime()}.json`);
         finalDate.setDate(currentDay.getDate() + 5);
         res.json({endVote: finalDate,changed: true});
     } 
