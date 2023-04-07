@@ -29,7 +29,7 @@ app.get("/poll", (req, res) => {
         return {
             label,
             percentage: (((100 * votes) / totalVotes) || 0).toFixed(0),
-            totalVotes: totalVotes
+            totalVotes: votes
         }
     });
     res.json(data);
