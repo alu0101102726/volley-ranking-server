@@ -50,7 +50,7 @@ function reWriteFile(infoPath, data) {
     const filePath = path.join(userDirectoryPath, infoPath);
     if(fs.existsSync(filePath))
         fs.unlinkSync(filePath);
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    fs.writeFileSync(filePath, JSON.stringify(data));
 }
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -83,6 +83,7 @@ app.post("/vote", (req, res) => {
 app.post("/profile", (req, res) => {
     const body = Object.keys(req.body)[0] + "\"}";
     const data = JSON.parse(body);
+    data.photo = data.photo.replaceAll(' ', '+');
     reWriteFile(`/${data.id}/info.json`, data);
     res.end()
 
