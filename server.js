@@ -94,8 +94,8 @@ app.get("/votes", (req, res) => {
     fs.readdirSync(userDirectoryPath).forEach(folderName => {
         const file = path.parse(folderName);
         const filePath = path.join(userDirectoryPath, `${file.name}`);
-        if(fs.existsSync(`${filePath}\\votes.json`))
-            files.push(fs.readFileSync(`${filePath}\\votes.json`, 'utf8'));
+        if(fs.existsSync(`${filePath}/votes.json`))
+            files.push(fs.readFileSync(`${filePath}/votes.json`, 'utf8'));
     })
     res.send(JSON.stringify(files));
 
@@ -106,7 +106,7 @@ app.get("/info", (req, res) => {
     fs.readdirSync(userDirectoryPath).forEach(folderName => {
         const file = path.parse(folderName);
         const filePath = path.join(userDirectoryPath, `${file.name}`);
-        files.push(fs.readFileSync(`${filePath}\\info.json`, 'utf8'));
+        files.push(fs.readFileSync(`${filePath}/info.json`, 'utf8'));
     })
     res.json(files);
 
